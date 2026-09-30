@@ -1,0 +1,36 @@
+﻿# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Build & Distribution Artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# PyInstaller temporary files
+*.manifest
+*.spec.bak
+
+# Runtime & Local Logs
+*.log
+dhanyah_crypto.log
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE & Editor Configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS System Files
+Thumbs.db
+desktop.ini
+.DS_Store

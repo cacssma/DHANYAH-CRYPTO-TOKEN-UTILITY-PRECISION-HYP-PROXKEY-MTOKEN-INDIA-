@@ -1,0 +1,5 @@
+PySide6>=6.5.0
+cryptography>=41.0.0
+PyKCS11>=1.5.10
+pyscard>=2.0.7
+asn1crypto>=1.5.0
