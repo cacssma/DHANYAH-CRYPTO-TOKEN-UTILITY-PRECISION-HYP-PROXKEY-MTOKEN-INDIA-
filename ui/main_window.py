@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Smart Card Subsystem Active | Auto-Detection Polling...")
 
-        lbl_contact = QLabel("Author: CA Akash (mail@ca-akash.in)")
+        lbl_contact = QLabel("Author: CA Akash J. Bhayani | Website: CA-AKASH.IN | mail@ca-akash.in")
         lbl_contact.setStyleSheet("color: #718096; font-size: 11px; padding-right: 10px;")
         self.status_bar.addPermanentWidget(lbl_contact)
 

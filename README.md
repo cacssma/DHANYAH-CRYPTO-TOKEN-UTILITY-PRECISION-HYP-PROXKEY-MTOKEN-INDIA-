@@ -1,4 +1,4 @@
-﻿# Dhanyah Crypto Utility
+# Dhanyah Crypto Utility
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -45,7 +45,7 @@ In India, Chartered Accountants, Tax Professionals, Company Secretaries, and Bus
 ## 🚀 Quick Start (Pre-built Executable)
 
 ### No Python or Vendor Software Required!
-1. Download the latest release from the [Releases](https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-/releases) page or build using `build_exe.bat`.
+1. Download the latest release from the [Releases](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY/releases) page or build using `build_exe.bat`.
 2. Extract the folder and double-click:
    ```text
    DhanyahCryptoUtility.exe
@@ -63,8 +63,8 @@ In India, Chartered Accountants, Tax Professionals, Company Secretaries, and Bus
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-.git
-   cd DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-
+   git clone https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY.git
+   cd DHANYAH-CRYPTO-UTILITY
    ```
 
 2. Install dependencies:
@@ -191,12 +191,13 @@ All 12 unit tests verify:
 
 ## 👤 Author & Contact
 
-- **Author**: CA Akash Bhayani
+- **Author**: CA Akash J. Bhayani
+- **Website**: [https://ca-akash.in](https://ca-akash.in)
 - **Email**: [mail@ca-akash.in](mailto:mail@ca-akash.in)
-- **Repository**: [https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY)
+- **Repository**: [https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3 - see the [LICENSE](LICENSE) file for details.

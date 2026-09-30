@@ -1,9 +1,9 @@
-﻿@echo off
+@echo off
 title Push Dhanyah Crypto Utility to GitHub
 echo =========================================================
 echo Pushing to GitHub Repository:
-echo https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-
-echo Author: CA Akash (mail@ca-akash.in)
+echo https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY
+echo Author: CA Akash J. Bhayani (mail@ca-akash.in) ^| https://ca-akash.in
 echo =========================================================
 echo.
 
@@ -44,7 +44,7 @@ set /p "GITHUB_TOKEN=Enter your GitHub Token (or press Enter to exit): "
 
 if not "%GITHUB_TOKEN%"=="" (
     echo Pushing using Personal Access Token...
-    "%GIT_EXE%" push https://%GITHUB_TOKEN%@github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-.git main
+    "%GIT_EXE%" push https://%GITHUB_TOKEN%@github.com/cacssma/DHANYAH-CRYPTO-UTILITY.git main
     if %ERRORLEVEL% equ 0 (
         echo.
         echo =========================================================
