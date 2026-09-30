@@ -124,9 +124,15 @@ class TokenDetector:
         """Register callback for token insertion event."""
         self._callbacks_insert.append(cb)
 
+    # Alias for flexibility
+    register_insert_callback = register_insertion_callback
+
     def register_removal_callback(self, cb: Callable[[str], None]):
         """Register callback for token removal event."""
         self._callbacks_remove.append(cb)
+
+    # Alias for flexibility
+    register_remove_callback = register_removal_callback
 
     def start(self):
         """Start background polling thread."""

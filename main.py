@@ -107,7 +107,7 @@ def run_gui(args, detector, pkcs11_mgr, cert_mgr, pin_mgr, signer):
         if not getattr(token, "is_simulated", False):
             SmartCardRegistrar.pulse_windows_certificates()
 
-    detector.register_insert_callback(_on_token_inserted_pulse)
+    detector.register_insertion_callback(_on_token_inserted_pulse)
 
     # Start hardware token hotplug monitor
     detector.start()
