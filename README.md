@@ -191,9 +191,9 @@ All 12 unit tests verify:
 
 ## 👤 Author & Contact
 
-- **Author**: CA Akash
+- **Author**: CA Akash Bhayani
 - **Email**: [mail@ca-akash.in](mailto:mail@ca-akash.in)
-- **Repository**: [https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-](https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-)
+- **Repository**: [https://github.com/cacssma/DHANYAH-CRYPTO-TOKEN-UTILITY-PRECISION-HYP-PROXKEY-MTOKEN-INDIA-](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY)
 
 ---
 
