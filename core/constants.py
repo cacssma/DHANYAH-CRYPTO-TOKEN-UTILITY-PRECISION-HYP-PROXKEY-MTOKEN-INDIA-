@@ -81,8 +81,11 @@ TOKEN_PROFILES: Dict[str, Dict[str, Any]] = {
         "default_pin_length": (4, 16),
         "default_user_pin": "12345678",
         "atrs": [
-            "3B9F118131FE9F006A6D546F6B656E2D4500008190007A",
-            "3B9F118131FE9F006A6D546F6B656E",
+            "3B9F118131FE9F006A6D546F6B656E2D5000058190006A",  # mToken Blue (mToken-P) full ATR
+            "3B9F118131FE9F006A6D546F6B656E2D50",              # mToken Blue prefix
+            "3B9F118131FE9F006A6D546F6B656E2D4500008190007A",  # mToken Purple (mToken-E / F3) full ATR
+            "3B9F118131FE9F006A6D546F6B656E2D45",              # mToken Purple prefix
+            "3B9F118131FE9F006A6D546F6B656E",                  # Generic mToken prefix
             "3B7D94000057445300000000000000000000",
             "3B7D9400005744530000",
             "3B7D940000574453",

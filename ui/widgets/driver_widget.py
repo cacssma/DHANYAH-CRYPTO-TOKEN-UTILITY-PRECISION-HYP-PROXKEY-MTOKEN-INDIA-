@@ -1,4 +1,4 @@
-﻿"""
+"""
 Dhanyah Crypto Utility - Dynamic Driver Discovery & System Health Widget
 Displays PKCS#11 validation status and Windows Smart Card / CAPI / Adobe / Browser integration.
 """
@@ -136,7 +136,8 @@ class DriverWidget(QWidget):
 
         items = [
             ("HyperPKI HYP2003 CSP (Feitian)", health["cards"].get("hyp2003", {}).get("registered", False)),
-            ("mToken CryptoID SmartCard MiniDriver (Longmai)", health["cards"].get("mtoken", {}).get("registered", False)),
+            ("mToken Blue Classic MiniDriver (Longmai)", health["cards"].get("mtoken_blue", {}).get("registered", False)),
+            ("mToken Purple FIPS F3 MiniDriver (Longmai)", health["cards"].get("mtoken_purple", {}).get("registered", False)),
             ("Watchdata ProxKey CSP / MiniDriver", health["cards"].get("proxkey", {}).get("registered", False)),
             ("Precision InnaITKey CSP / MiniDriver", health["cards"].get("innait", {}).get("registered", False)),
             ("Windows Certificate Propagation Service (CertPropSvc)", health["services"].get("CertPropSvc", False)),

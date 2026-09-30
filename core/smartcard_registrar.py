@@ -1,4 +1,4 @@
-﻿"""
+"""
 Dhanyah Crypto Utility - Windows Smart Card Subsystem & MiniDriver Registrar
 Enables zero-install plug-and-play support across Windows, Adobe Acrobat,
 Chrome, Edge, and browser web portals (MCA, GST, Income Tax, EPFO).
@@ -26,14 +26,28 @@ CSP_REG_ROOTS = [
 ]
 
 CARD_DEFINITIONS = {
-    "mtoken": {
+    "mtoken_blue": {
         "name": "Longmai mToken SmartCard",
+        "label": "mToken Blue (CryptoID Classic)",
         "atr": bytes.fromhex("3b9f118131fe9f006a6d546f6b656e2d50000081900000"),
         "atr_mask": bytes.fromhex("ffffffffffffffffffffffffffffffffff0000ffffff00"),
         "crypto_provider": "Microsoft Base Smart Card Crypto Provider",
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "minidriver_64": "mTokenMiniDrv.x64.dll",
         "minidriver_32": "mTokenMiniDrv.dll",
+        "csp_name": "mToken CryptoID CSP",
+        "csp_image": "basecsp.dll",
+        "csp_type": 1,
+    },
+    "mtoken_purple": {
+        "name": "Longmai mToken CryptoFIPS",
+        "label": "mToken Purple (CryptoID FIPS F3)",
+        "atr": bytes.fromhex("3b9f118131fe9f006a6d546f6b656e2d45000081900000"),
+        "atr_mask": bytes.fromhex("ffffffffffffffffffffffffffffffffff0000ffffff00"),
+        "crypto_provider": "Microsoft Base Smart Card Crypto Provider",
+        "ksp": "Microsoft Smart Card Key Storage Provider",
+        "minidriver_64": "mTokenMiniDrvF3.x64.dll",
+        "minidriver_32": "mTokenMiniDrvF3.dll",
         "csp_name": "mToken CryptoID CSP",
         "csp_image": "basecsp.dll",
         "csp_type": 1,
@@ -209,12 +223,13 @@ class SmartCardRegistrar:
             # 1. Copy MiniDriver & CSP DLLs
             logger.info(f"Deploying MiniDriver and CSP binaries from {drivers_source_dir}...")
 
-            # mToken MiniDrivers
+            # mToken MiniDrivers (Both Blue & Purple F3)
             mtoken_src = os.path.join(drivers_source_dir, "mtoken")
             if os.path.isdir(mtoken_src):
+                # Blue Classic
                 m_x64 = os.path.join(mtoken_src, "mTokenMiniDrv.x64.dll")
                 m_32 = os.path.join(mtoken_src, "mTokenMiniDrv.dll")
-                p11 = os.path.join(mtoken_src, "cryptoida_pkcs11.dll")
+                p11_blue = os.path.join(mtoken_src, "cryptoida_pkcs11.dll")
 
                 if os.path.isfile(m_x64):
                     _safe_copy(m_x64, os.path.join(system32, "mTokenMiniDrv.x64.dll"))
@@ -222,10 +237,26 @@ class SmartCardRegistrar:
                     _safe_copy(m_32, os.path.join(system32, "mTokenMiniDrv.dll"))
                     if has_wow64:
                         _safe_copy(m_32, os.path.join(syswow64, "mTokenMiniDrv.dll"))
-                if os.path.isfile(p11):
-                    _safe_copy(p11, os.path.join(system32, "cryptoida_pkcs11.dll"))
+                if os.path.isfile(p11_blue):
+                    _safe_copy(p11_blue, os.path.join(system32, "cryptoida_pkcs11.dll"))
                     if has_wow64:
-                        _safe_copy(p11, os.path.join(syswow64, "cryptoida_pkcs11.dll"))
+                        _safe_copy(p11_blue, os.path.join(syswow64, "cryptoida_pkcs11.dll"))
+
+                # Purple FIPS F3
+                mf3_x64 = os.path.join(mtoken_src, "mTokenMiniDrvF3.x64.dll")
+                mf3_32 = os.path.join(mtoken_src, "mTokenMiniDrvF3.dll")
+                p11_purple = os.path.join(mtoken_src, "cryptoida_pkcs11_f3.dll")
+
+                if os.path.isfile(mf3_x64):
+                    _safe_copy(mf3_x64, os.path.join(system32, "mTokenMiniDrvF3.x64.dll"))
+                if os.path.isfile(mf3_32):
+                    _safe_copy(mf3_32, os.path.join(system32, "mTokenMiniDrvF3.dll"))
+                    if has_wow64:
+                        _safe_copy(mf3_32, os.path.join(syswow64, "mTokenMiniDrvF3.dll"))
+                if os.path.isfile(p11_purple):
+                    _safe_copy(p11_purple, os.path.join(system32, "cryptoida_pkcs11_f3.dll"))
+                    if has_wow64:
+                        _safe_copy(p11_purple, os.path.join(syswow64, "cryptoida_pkcs11_f3.dll"))
 
             # HyperPKI CSP files
             hyp_src = os.path.join(drivers_source_dir, "hyp2003")

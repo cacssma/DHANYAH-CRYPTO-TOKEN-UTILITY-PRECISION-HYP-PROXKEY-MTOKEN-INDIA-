@@ -71,7 +71,15 @@ def identify_token_by_atr(atr_hex: str) -> Optional[Dict[str, Any]]:
         for known_atr in profile.get("atrs", []):
             clean_known = known_atr.upper().replace(" ", "").replace(":", "")
             if clean_atr.startswith(clean_known) or clean_known.startswith(clean_atr):
-                return profile
+                res_profile = dict(profile)
+                if token_key == TOKEN_MTOKEN:
+                    if "6A6D546F6B656E2D50" in clean_atr:  # jmToken-P (Blue)
+                        res_profile["name"] = "mToken CryptoID (Blue)"
+                        res_profile["model"] = "mToken Blue"
+                    elif "6A6D546F6B656E2D45" in clean_atr:  # jmToken-E (Purple)
+                        res_profile["name"] = "mToken CryptoID (Purple / F3)"
+                        res_profile["model"] = "mToken Purple"
+                return res_profile
 
     return None
 
