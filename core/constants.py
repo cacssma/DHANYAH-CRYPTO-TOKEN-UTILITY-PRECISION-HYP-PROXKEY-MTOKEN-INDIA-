@@ -32,11 +32,13 @@ TOKEN_PROFILES: Dict[str, Dict[str, Any]] = {
         "default_user_pin": "12345678",
         # Smart Card ATR prefixes (hex uppercase without spaces)
         "atrs": [
-            "3B9F958131FE9F0065465305300671DF00000080",
-            "3B9F958131FE9F0065465305300671DF",
-            "3B6F000080318065B085020120120F",
+            "3B9F958131FE9F006646530500000071DF000086000000",  # HYP2003IND_33 (FIPS Level 3)
+            "3B9F958131FE9F006646530500000071DF000006000000",  # HYP2003IND / HYP2003v2
+            "3B9F958131FE9F006646530500000071DF",              # HYP2003 prefix
             "3B9F958131FE9F0065465305300671DF00000080",
             "3B9F958131FE9F0065465305300671DF00000081",
+            "3B9F958131FE9F0065465305300671DF",
+            "3B6F000080318065B085020120120F",
         ],
         "usb_ids": [
             ("096e", "0807"),  # Feitian ePass2003 / HYP2003
@@ -47,19 +49,25 @@ TOKEN_PROFILES: Dict[str, Dict[str, Any]] = {
         ],
         "reader_name_keywords": ["hyper", "hyp", "epass2003", "feitian", "enterpke"],
         "registry_csp": [
+            "HyperPKI HYP2003 CSP India v3.3",
             "HyperPKI HYP2003 CSP India v3.0",
             "EnterSafe ePass2003 CSP v1.0",
         ],
         # Driver filenames in order of preference
         "dll_names_64": [
+            "HYP2003csp11IND.dll",
             "eps2003csp11v2.dll",
+            "HYP2003csp11IND_s.dll",
             "eps2003csp11v2_s.dll",
             "ep11_nsp.dll",
             "hyp2003csp.dll",
             "HS2003-pkcs11.dll",
         ],
         "dll_names_32": [
+            "HYP2003csp11IND.dll",
+            "HYP2003csp11IND.x86.dll",
             "eps2003csp11v2.dll",
+            "HYP2003csp11IND_s.dll",
             "eps2003csp11v2_s.dll",
             "ep11_nsp.dll",
             "hyp2003csp.dll",

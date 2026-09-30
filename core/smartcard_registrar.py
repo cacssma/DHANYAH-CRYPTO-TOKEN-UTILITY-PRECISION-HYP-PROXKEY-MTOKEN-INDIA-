@@ -52,8 +52,51 @@ CARD_DEFINITIONS = {
         "csp_image": "basecsp.dll",
         "csp_type": 1,
     },
+    "hyp2003_v33": {
+        "name": "HYP2003IND_33",
+        "label": "HyperPKI HYP 2003 (FIPS Level 3 v3.3)",
+        "atr": bytes.fromhex("3b9f958131fe9f006646530500000071df000086000000"),
+        "atr_mask": bytes.fromhex("ffffffffffffffffffffffff000000ffffffffffffff00"),
+        "crypto_provider": "HyperPKI HYP2003 CSP India v3.3",
+        "ksp": "Microsoft Smart Card Key Storage Provider",
+        "csp_name": "HyperPKI HYP2003 CSP India v3.3",
+        "csp_image": r"C:\Windows\system32\HYP2003csp11IND_s.dll",
+        "csp_type": 1,
+        "csp_sig_64": bytes.fromhex(
+            "c7fb3de5eb42b9070e36bd0ff58deaaac3b17a8f72bfe032add566136280b5c931e7df471f773f3824ecc436942d0c749f44"
+            "f674db0503ace83009eceded524d2f03e5d32c71d4de2fffae50e7e95fc43785204a18d10688f676f0a4b357224b5bfd73c2"
+            "3e37511064c51ff731ad8dc4ff5845567ec13ef33f864855b3a5e41a0000000000000000"
+        ),
+        "csp_sig_32": bytes.fromhex(
+            "661ffec8524565568b3aa1d7c494e366c0217c935f092f8f2daec2f7de27b553382188fe6742f2739ea02db1f8878f7b0667"
+            "fdfff5d42ae98d46d056ba49b6d035ea766a171681b12b424ae91809799d897e3cc445d4d93adb3f2e0a30fdc330b2d3a245"
+            "e2e86edf252cbde61a46b4240b680309ddae65bc80d184dc641550130000000000000000"
+        ),
+    },
+    "hyp2003_ind": {
+        "name": "HYP2003IND",
+        "label": "HyperPKI HYP 2003 (India Standard)",
+        "atr": bytes.fromhex("3b9f958131fe9f006646530500000071df000006000000"),
+        "atr_mask": bytes.fromhex("ffffffffffffffffffffffff000000ffffffffffffff00"),
+        "crypto_provider": "HyperPKI HYP2003 CSP India v3.3",
+        "ksp": "Microsoft Smart Card Key Storage Provider",
+        "csp_name": "HyperPKI HYP2003 CSP India v3.3",
+        "csp_image": r"C:\Windows\system32\HYP2003csp11IND_s.dll",
+        "csp_type": 1,
+        "csp_sig_64": bytes.fromhex(
+            "c7fb3de5eb42b9070e36bd0ff58deaaac3b17a8f72bfe032add566136280b5c931e7df471f773f3824ecc436942d0c749f44"
+            "f674db0503ace83009eceded524d2f03e5d32c71d4de2fffae50e7e95fc43785204a18d10688f676f0a4b357224b5bfd73c2"
+            "3e37511064c51ff731ad8dc4ff5845567ec13ef33f864855b3a5e41a0000000000000000"
+        ),
+        "csp_sig_32": bytes.fromhex(
+            "661ffec8524565568b3aa1d7c494e366c0217c935f092f8f2daec2f7de27b553382188fe6742f2739ea02db1f8878f7b0667"
+            "fdfff5d42ae98d46d056ba49b6d035ea766a171681b12b424ae91809799d897e3cc445d4d93adb3f2e0a30fdc330b2d3a245"
+            "e2e86edf252cbde61a46b4240b680309ddae65bc80d184dc641550130000000000000000"
+        ),
+    },
     "hyp2003": {
         "name": "HYP2003v2",
+        "label": "HyperPKI HYP 2003 (Classic v3.0)",
         "atr": bytes.fromhex("3b9f958131fe9f006646530500000071df000006000000"),
         "atr_mask": bytes.fromhex("ffffffffffffffffffffffff000000ffffffffffffff00"),
         "crypto_provider": "HyperPKI HYP2003 CSP India v3.0",
@@ -258,9 +301,40 @@ class SmartCardRegistrar:
                     if has_wow64:
                         _safe_copy(p11_purple, os.path.join(syswow64, "cryptoida_pkcs11_f3.dll"))
 
-            # HyperPKI CSP files
+            # HyperPKI CSP & PKCS#11 files (Both FIPS Level 3 and Classic)
             hyp_src = os.path.join(drivers_source_dir, "hyp2003")
             if os.path.isdir(hyp_src):
+                # 1. New FIPS Level 3 binaries
+                h_ind_64 = os.path.join(hyp_src, "HYP2003csp11IND.dll")
+                h_ind_32 = os.path.join(hyp_src, "HYP2003csp11IND.x86.dll")
+                h_inds_64 = os.path.join(hyp_src, "HYP2003csp11IND_s.dll")
+                h_inds_32 = os.path.join(hyp_src, "HYP2003csp11IND_s.x86.dll")
+                h_sig = os.path.join(hyp_src, "HYP2003csp11IND.sig")
+
+                if os.path.isfile(h_ind_64):
+                    _safe_copy(h_ind_64, os.path.join(system32, "HYP2003csp11IND.dll"))
+                if os.path.isfile(h_ind_32):
+                    if has_wow64:
+                        _safe_copy(h_ind_32, os.path.join(syswow64, "HYP2003csp11IND.dll"))
+                    else:
+                        _safe_copy(h_ind_32, os.path.join(system32, "HYP2003csp11IND.dll"))
+                elif os.path.isfile(h_ind_64) and not has_wow64:
+                    _safe_copy(h_ind_64, os.path.join(system32, "HYP2003csp11IND.dll"))
+
+                if os.path.isfile(h_inds_64):
+                    _safe_copy(h_inds_64, os.path.join(system32, "HYP2003csp11IND_s.dll"))
+                if os.path.isfile(h_inds_32):
+                    if has_wow64:
+                        _safe_copy(h_inds_32, os.path.join(syswow64, "HYP2003csp11IND_s.dll"))
+                    else:
+                        _safe_copy(h_inds_32, os.path.join(system32, "HYP2003csp11IND_s.dll"))
+
+                if os.path.isfile(h_sig):
+                    _safe_copy(h_sig, os.path.join(system32, "HYP2003csp11IND.sig"))
+                    if has_wow64:
+                        _safe_copy(h_sig, os.path.join(syswow64, "HYP2003csp11IND.sig"))
+
+                # 2. Classic HYP2003 binaries
                 for f in ["eps2003csp11v2_s.dll", "eps2003csp11v2.sig", "eps2003csp11v2.dll"]:
                     fp = os.path.join(hyp_src, f)
                     if os.path.isfile(fp):
@@ -308,6 +382,7 @@ class SmartCardRegistrar:
 
             # 3. Register CSP Providers
             for root_path in CSP_REG_ROOTS:
+                is_wow = "WOW6432Node" in root_path
                 for token_key, cfg in CARD_DEFINITIONS.items():
                     if "csp_name" in cfg:
                         csp_name = cfg["csp_name"]
@@ -316,7 +391,11 @@ class SmartCardRegistrar:
                             with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_path) as k:
                                 winreg.SetValueEx(k, "Image Path", 0, winreg.REG_SZ, cfg["csp_image"])
                                 winreg.SetValueEx(k, "Type", 0, winreg.REG_DWORD, cfg.get("csp_type", 1))
-                                winreg.SetValueEx(k, "SigInFile", 0, winreg.REG_DWORD, 0)
+                                sig_bytes = cfg.get("csp_sig_32" if is_wow else "csp_sig_64")
+                                if sig_bytes:
+                                    winreg.SetValueEx(k, "Signature", 0, winreg.REG_BINARY, sig_bytes)
+                                else:
+                                    winreg.SetValueEx(k, "SigInFile", 0, winreg.REG_DWORD, 0)
                         except Exception as e:
                             logger.warning(f"Error registering CSP provider key {key_path}: {e}")
 

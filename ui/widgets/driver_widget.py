@@ -135,7 +135,8 @@ class DriverWidget(QWidget):
         health = SmartCardRegistrar.check_subsystem_health()
 
         items = [
-            ("HyperPKI HYP2003 CSP (Feitian)", health["cards"].get("hyp2003", {}).get("registered", False)),
+            ("HyperPKI HYP 2003 FIPS L3 (v3.3)", health["cards"].get("hyp2003_v33", {}).get("registered", False)),
+            ("HyperPKI HYP 2003 Standard (v3.0)", health["cards"].get("hyp2003", {}).get("registered", False) or health["cards"].get("hyp2003_v2", {}).get("registered", False)),
             ("mToken Blue Classic MiniDriver (Longmai)", health["cards"].get("mtoken_blue", {}).get("registered", False)),
             ("mToken Purple FIPS F3 MiniDriver (Longmai)", health["cards"].get("mtoken_purple", {}).get("registered", False)),
             ("Watchdata ProxKey CSP / MiniDriver", health["cards"].get("proxkey", {}).get("registered", False)),

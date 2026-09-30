@@ -9,7 +9,7 @@ from core.smartcard_registrar import SmartCardRegistrar, CARD_DEFINITIONS
 class TestSmartCardRegistrar(unittest.TestCase):
 
     def test_definitions_completeness(self):
-        for expected in ["hyp2003", "mtoken_blue", "mtoken_purple", "proxkey", "innait"]:
+        for expected in ["hyp2003", "hyp2003_v33", "mtoken_blue", "mtoken_purple", "proxkey", "innait"]:
             self.assertIn(expected, CARD_DEFINITIONS)
             cfg = CARD_DEFINITIONS[expected]
             self.assertIn("name", cfg)
@@ -26,7 +26,7 @@ class TestSmartCardRegistrar(unittest.TestCase):
         self.assertIn("is_admin", health)
         self.assertIn("mtoken_blue", health["cards"])
         self.assertIn("mtoken_purple", health["cards"])
-        self.assertIn("hyp2003", health["cards"])
+        self.assertIn("hyp2003_v33", health["cards"])
         self.assertIn("proxkey", health["cards"])
         self.assertIn("innait", health["cards"])
 

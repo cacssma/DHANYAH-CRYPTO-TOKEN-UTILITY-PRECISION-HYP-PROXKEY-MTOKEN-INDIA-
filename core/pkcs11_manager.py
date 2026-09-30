@@ -131,8 +131,14 @@ class PKCS11Manager:
             search_roots.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
         for root in search_roots:
+            hyp_cand = os.path.join(root, "drivers", "hyp2003", "HYP2003csp11IND.dll" if IS_64BIT else "HYP2003csp11IND.x86.dll")
+            if not os.path.exists(hyp_cand):
+                hyp_cand = os.path.join(root, "drivers", "hyp2003", "HYP2003csp11IND.dll")
+            if not os.path.exists(hyp_cand):
+                hyp_cand = os.path.join(root, "drivers", "hyp2003", "eps2003csp11v2.dll")
+
             bundled_map = {
-                TOKEN_HYP2003: os.path.join(root, "drivers", "hyp2003", "eps2003csp11v2.dll"),
+                TOKEN_HYP2003: hyp_cand,
                 TOKEN_MTOKEN: os.path.join(root, "drivers", "mtoken", "cryptoida_pkcs11.dll"),
                 TOKEN_PROXKEY: os.path.join(root, "drivers", "proxkey", "WDPKCS.dll"),
                 TOKEN_INNAIT: os.path.join(root, "drivers", "innait", "InnaITPKCS11Driver.dll"),
@@ -144,9 +150,12 @@ class PKCS11Manager:
         # 1. Direct checks for known paths discovered on Indian Windows systems
         if token_id == TOKEN_HYP2003:
             candidates.extend([
+                r"C:\Windows\System32\HYP2003csp11IND.dll",
                 r"C:\Windows\System32\eps2003csp11v2.dll",
+                r"C:\Windows\SysWOW64\HYP2003csp11IND.dll",
                 r"C:\Windows\SysWOW64\eps2003csp11v2.dll",
                 r"C:\Program Files (x86)\IDSign CA\IDSignTokensUtility\HS2003-pkcs11.dll",
+                r"C:\Windows\System32\HYP2003csp11IND_s.dll",
                 r"C:\Windows\System32\eps2003csp11v2_s.dll",
             ])
         elif token_id == TOKEN_MTOKEN:

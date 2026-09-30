@@ -79,6 +79,13 @@ def identify_token_by_atr(atr_hex: str) -> Optional[Dict[str, Any]]:
                     elif "6A6D546F6B656E2D45" in clean_atr:  # jmToken-E (Purple)
                         res_profile["name"] = "mToken CryptoID (Purple / F3)"
                         res_profile["model"] = "mToken Purple"
+                elif token_key == TOKEN_HYP2003:
+                    if "000086000000" in clean_atr:
+                        res_profile["name"] = "HyperPKI HYP 2003 (FIPS Level 3 v3.3)"
+                        res_profile["model"] = "HYP 2003 FIPS L3"
+                    elif "000006000000" in clean_atr or "66465305" in clean_atr:
+                        res_profile["name"] = "HyperPKI HYP 2003 (Standard v3.0)"
+                        res_profile["model"] = "HYP 2003 Standard"
                 return res_profile
 
     return None
