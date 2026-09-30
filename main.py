@@ -93,6 +93,22 @@ def run_gui(args, detector, pkcs11_mgr, cert_mgr, pin_mgr, signer):
     app.setApplicationName("Dhanyah Crypto Utility")
     app.setOrganizationName("Dhanyah")
 
+    from core.smartcard_registrar import SmartCardRegistrar
+
+    # Auto-register Windows Smart Card subsystem for all 4 tokens if elevated
+    if SmartCardRegistrar.is_admin():
+        try:
+            SmartCardRegistrar.register_windows_subsystem()
+        except Exception as e:
+            logger.warning(f"Auto-registration of Smart Card subsystem: {e}")
+
+    # Auto-pulse Windows certificate propagation when hardware token is inserted
+    def _on_token_inserted_pulse(token):
+        if not getattr(token, "is_simulated", False):
+            SmartCardRegistrar.pulse_windows_certificates()
+
+    detector.register_insert_callback(_on_token_inserted_pulse)
+
     # Start hardware token hotplug monitor
     detector.start()
 
