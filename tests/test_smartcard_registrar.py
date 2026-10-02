@@ -30,10 +30,34 @@ class TestSmartCardRegistrar(unittest.TestCase):
         self.assertIn("proxkey", health["cards"])
         self.assertIn("innait", health["cards"])
 
-    def test_pulse_does_not_crash(self):
-        # Pulsing certificates should return boolean
-        res = SmartCardRegistrar.pulse_windows_certificates()
-        self.assertIsInstance(res, bool)
+    def test_architecture_paths(self):
+        # Verify 32-bit and 64-bit image paths exist
+        for key in ["hyp2003", "hyp2003_v33", "mtoken_blue", "mtoken_purple", "proxkey", "innait"]:
+            cfg = CARD_DEFINITIONS[key]
+            self.assertIn("csp_image_64", cfg)
+            self.assertIn("csp_image_32", cfg)
+            if key in ["hyp2003", "hyp2003_v33"]:
+                self.assertIn("System32", cfg["csp_image_64"])
+                self.assertIn("SysWOW64", cfg["csp_image_32"])
+            elif key == "proxkey":
+                self.assertIn("System32", cfg["csp_image_64"])
+                self.assertIn("SysWOW64", cfg["csp_image_32"])
+
+    def test_sync_token_certificates_to_store(self):
+        from core.cert_manager import CertManager
+        # Empty list handling
+        count, msg = SmartCardRegistrar.sync_token_certificates_to_store("hyp2003_v33", [])
+        self.assertEqual(count, 0)
+
+        # Simulated cert sync (should succeed and return 1)
+        sim_cert = CertManager.generate_simulated_dsc()
+        count, msg = SmartCardRegistrar.sync_token_certificates_to_store("hyp2003_v33", [sim_cert])
+        self.assertEqual(count, 1)
+        self.assertIn("Successfully synchronized", msg)
+
+        # Clean up synced simulated cert
+        import subprocess
+        subprocess.run(["certutil", "-user", "-delstore", "My", sim_cert.fingerprint_sha1], capture_output=True)
 
 
 if __name__ == "__main__":

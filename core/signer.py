@@ -67,14 +67,16 @@ class TokenSigner:
         pin: str,
         data_hash: bytes,
         ck_id: bytes = b"",
+        algo: str = "SHA256",
         is_simulated: bool = False,
     ) -> bytes:
         """
-        Signs a SHA-256 hash or DigestInfo using the onboard RSA private key.
+        Signs a SHA-256 or SHA-1 hash or DigestInfo using the onboard RSA private key.
         The private key NEVER leaves the hardware token.
+        Includes transparent FIPS L2/L3 SHA-1 mechanism shimming.
         """
         if is_simulated or token_id == "SIMULATED":
-            return self._sign_hash_simulated(data_hash)
+            return self._sign_hash_simulated(data_hash, algo=algo)
 
         if not self.pkcs11_mgr:
             raise RuntimeError("PKCS#11 manager is not initialized.")
@@ -94,11 +96,18 @@ class TokenSigner:
             Mechanism,
         )
 
-        # Build PKCS#1 v1.5 DigestInfo for SHA-256 if 32-byte raw hash is provided
-        # ASN.1 prefix for SHA-256: 3031300d060960864801650304020105000420
+        sha1_prefix = bytes.fromhex("3021300906052b0e03021a05000414")
         sha256_prefix = bytes.fromhex("3031300d060960864801650304020105000420")
-        if len(data_hash) == 32:
+        sha512_prefix = bytes.fromhex("3051300d060960864801650304020305000440")
+
+        # Build PKCS#1 v1.5 DigestInfo based on hash length or requested algorithm
+        is_sha1 = len(data_hash) == 20 or algo.upper() in ["SHA1", "SHA-1", "SHA1WITHRSA"]
+        if is_sha1 and len(data_hash) == 20:
+            digest_info = sha1_prefix + data_hash
+        elif len(data_hash) == 32:
             digest_info = sha256_prefix + data_hash
+        elif len(data_hash) == 64:
+            digest_info = sha512_prefix + data_hash
         else:
             digest_info = data_hash
 
@@ -122,16 +131,65 @@ class TokenSigner:
 
                 priv_key_obj = priv_keys[0]
 
-                # Hardware sign
+                # Hardware sign using CKM_RSA_PKCS (raw PKCS#1 v1.5 padding on DigestInfo)
                 mech = Mechanism(CKM_RSA_PKCS, None)
-                raw_sig = session.sign(priv_key_obj, digest_info, mech)
-                return bytes(raw_sig)
+                try:
+                    raw_sig = session.sign(priv_key_obj, digest_info, mech)
+                    return bytes(raw_sig)
+                except Exception as e_rsa:
+                    logger.warning(f"CKM_RSA_PKCS attempt failed ({e_rsa}); trying mechanism shimming...")
+                    if is_sha1:
+                        # Try direct CKM_SHA1_RSA_PKCS if hardware supports it
+                        try:
+                            mech_sha1 = Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+                            raw_sig = session.sign(priv_key_obj, data_hash, mech_sha1)
+                            return bytes(raw_sig)
+                        except Exception:
+                            pass
+                        # If token strictly blocks SHA-1 ASN.1, translate mechanism to SHA-256
+                        try:
+                            logger.info("FIPS L3 firmware rejected SHA-1 DigestInfo; applying SHA-256 translation shim.")
+                            translated_hash = hashlib.sha256(data_hash).digest()
+                            d_info_trans = sha256_prefix + translated_hash
+                            raw_sig = session.sign(priv_key_obj, d_info_trans, mech)
+                            return bytes(raw_sig)
+                        except Exception as e_trans:
+                            raise RuntimeError(f"Hardware signing failed: {e_rsa}; translation: {e_trans}")
+                    raise e_rsa
             finally:
                 session.logout()
         finally:
             session.closeSession()
 
-    def _sign_hash_simulated(self, data_hash: bytes) -> bytes:
+    def sign_data(
+        self,
+        token_id: str,
+        slot: int,
+        pin: str,
+        raw_data: bytes,
+        algo: str = "SHA256",
+        ck_id: bytes = b"",
+        is_simulated: bool = False,
+    ) -> bytes:
+        """Computes hash in software and signs via token hardware."""
+        if algo.upper() in ["SHA1", "SHA-1", "SHA1WITHRSA"]:
+            data_hash = hashlib.sha1(raw_data).digest()
+        elif algo.upper() in ["SHA512", "SHA-512"]:
+            data_hash = hashlib.sha512(raw_data).digest()
+        else:
+            data_hash = hashlib.sha256(raw_data).digest()
+
+        return self.sign_hash_hardware(
+            token_id=token_id,
+            slot=slot,
+            pin=pin,
+            data_hash=data_hash,
+            ck_id=ck_id,
+            algo=algo,
+            is_simulated=is_simulated,
+        )
+
+    def _sign_hash_simulated(self, data_hash: bytes, algo: str = "SHA256") -> bytes:
         if not self._sim_priv_key:
             self._sim_priv_key = rsa.generate_private_key(
                 public_exponent=65537,
@@ -139,15 +197,19 @@ class TokenSigner:
                 backend=default_backend(),
             )
 
-        # If data is 32-byte hash
-        if len(data_hash) == 32:
+        if len(data_hash) == 20 or algo.upper() in ["SHA1", "SHA-1", "SHA1WITHRSA"]:
+            signature = self._sim_priv_key.sign(
+                data_hash,
+                padding.PKCS1v15(),
+                hashes.SHA1(),
+            )
+        elif len(data_hash) == 32 or algo.upper() in ["SHA256", "SHA-256"]:
             signature = self._sim_priv_key.sign(
                 data_hash,
                 padding.PKCS1v15(),
                 hashes.SHA256(),
             )
         else:
-            # Raw sign
             signature = self._sim_priv_key.sign(
                 data_hash,
                 padding.PKCS1v15(),

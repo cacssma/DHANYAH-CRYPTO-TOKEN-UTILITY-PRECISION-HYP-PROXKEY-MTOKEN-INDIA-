@@ -37,6 +37,8 @@ CARD_DEFINITIONS = {
         "minidriver_32": "mTokenMiniDrv.dll",
         "csp_name": "mToken CryptoID CSP",
         "csp_image": "basecsp.dll",
+        "csp_image_64": "basecsp.dll",
+        "csp_image_32": "basecsp.dll",
         "csp_type": 1,
     },
     "mtoken_purple": {
@@ -50,6 +52,8 @@ CARD_DEFINITIONS = {
         "minidriver_32": "mTokenMiniDrvF3.dll",
         "csp_name": "mToken CryptoID CSP",
         "csp_image": "basecsp.dll",
+        "csp_image_64": "basecsp.dll",
+        "csp_image_32": "basecsp.dll",
         "csp_type": 1,
     },
     "hyp2003_v33": {
@@ -61,6 +65,8 @@ CARD_DEFINITIONS = {
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "csp_name": "HyperPKI HYP2003 CSP India v3.3",
         "csp_image": r"C:\Windows\system32\HYP2003csp11IND_s.dll",
+        "csp_image_64": r"C:\Windows\System32\HYP2003csp11IND_s.dll",
+        "csp_image_32": r"C:\Windows\SysWOW64\HYP2003csp11IND_s.dll",
         "csp_type": 1,
         "csp_sig_64": bytes.fromhex(
             "c7fb3de5eb42b9070e36bd0ff58deaaac3b17a8f72bfe032add566136280b5c931e7df471f773f3824ecc436942d0c749f44"
@@ -82,6 +88,8 @@ CARD_DEFINITIONS = {
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "csp_name": "HyperPKI HYP2003 CSP India v3.3",
         "csp_image": r"C:\Windows\system32\HYP2003csp11IND_s.dll",
+        "csp_image_64": r"C:\Windows\System32\HYP2003csp11IND_s.dll",
+        "csp_image_32": r"C:\Windows\SysWOW64\HYP2003csp11IND_s.dll",
         "csp_type": 1,
         "csp_sig_64": bytes.fromhex(
             "c7fb3de5eb42b9070e36bd0ff58deaaac3b17a8f72bfe032add566136280b5c931e7df471f773f3824ecc436942d0c749f44"
@@ -102,8 +110,20 @@ CARD_DEFINITIONS = {
         "crypto_provider": "HyperPKI HYP2003 CSP India v3.0",
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "csp_name": "HyperPKI HYP2003 CSP India v3.0",
-        "csp_image": r"C:\Windows\system32\eps2003csp11v2_s.dll",
+        "csp_image": r"C:\Windows\system32\HYP2003csp11IND_s.dll",
+        "csp_image_64": r"C:\Windows\System32\HYP2003csp11IND_s.dll",
+        "csp_image_32": r"C:\Windows\SysWOW64\HYP2003csp11IND_s.dll",
         "csp_type": 1,
+        "csp_sig_64": bytes.fromhex(
+            "c7fb3de5eb42b9070e36bd0ff58deaaac3b17a8f72bfe032add566136280b5c931e7df471f773f3824ecc436942d0c749f44"
+            "f674db0503ace83009eceded524d2f03e5d32c71d4de2fffae50e7e95fc43785204a18d10688f676f0a4b357224b5bfd73c2"
+            "3e37511064c51ff731ad8dc4ff5845567ec13ef33f864855b3a5e41a0000000000000000"
+        ),
+        "csp_sig_32": bytes.fromhex(
+            "661ffec8524565568b3aa1d7c494e366c0217c935f092f8f2daec2f7de27b553382188fe6742f2739ea02db1f8878f7b0667"
+            "fdfff5d42ae98d46d056ba49b6d035ea766a171681b12b424ae91809799d897e3cc445d4d93adb3f2e0a30fdc330b2d3a245"
+            "e2e86edf252cbde61a46b4240b680309ddae65bc80d184dc641550130000000000000000"
+        ),
     },
     "proxkey": {
         "name": "WD_Ultimate Key Minidriver",
@@ -113,6 +133,8 @@ CARD_DEFINITIONS = {
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "csp_name": "PROXKey CSP India V3.0",
         "csp_image": r"C:\Windows\system32\Watchdata\PROXKey CSP India V3.0\wdsafe3.dll",
+        "csp_image_64": r"C:\Windows\System32\Watchdata\PROXKey CSP India V3.0\wdsafe3.dll",
+        "csp_image_32": r"C:\Windows\SysWOW64\Watchdata\PROXKey CSP India V3.0\wdsafe3.dll",
         "csp_type": 1,
     },
     "innait": {
@@ -123,6 +145,8 @@ CARD_DEFINITIONS = {
         "ksp": "Microsoft Smart Card Key Storage Provider",
         "csp_name": "InnaIT Cryptographic Provider CSP",
         "csp_image": r"C:\Windows\system32\InnaITCSP.dll",
+        "csp_image_64": r"C:\Windows\System32\InnaITCSP.dll",
+        "csp_image_32": r"C:\Windows\SysWOW64\InnaITPKCS11Driver.dll",
         "csp_type": 1,
     },
 }
@@ -326,21 +350,33 @@ class SmartCardRegistrar:
                 if os.path.isfile(h_inds_32):
                     if has_wow64:
                         _safe_copy(h_inds_32, os.path.join(syswow64, "HYP2003csp11IND_s.dll"))
+                        _safe_copy(h_inds_32, os.path.join(syswow64, "eps2003csp11v2_s.dll"))
                     else:
                         _safe_copy(h_inds_32, os.path.join(system32, "HYP2003csp11IND_s.dll"))
 
+                if os.path.isfile(h_ind_64):
+                    _safe_copy(h_ind_64, os.path.join(system32, "HYP2003csp11IND.dll"))
+                if os.path.isfile(h_ind_32):
+                    if has_wow64:
+                        _safe_copy(h_ind_32, os.path.join(syswow64, "HYP2003csp11IND.dll"))
+                        _safe_copy(h_ind_32, os.path.join(syswow64, "eps2003csp11v2.dll"))
+                    else:
+                        _safe_copy(h_ind_32, os.path.join(system32, "HYP2003csp11IND.dll"))
+                elif os.path.isfile(h_ind_64) and not has_wow64:
+                    _safe_copy(h_ind_64, os.path.join(system32, "HYP2003csp11IND.dll"))
+
                 if os.path.isfile(h_sig):
                     _safe_copy(h_sig, os.path.join(system32, "HYP2003csp11IND.sig"))
+                    _safe_copy(h_sig, os.path.join(system32, "eps2003csp11v2.sig"))
                     if has_wow64:
                         _safe_copy(h_sig, os.path.join(syswow64, "HYP2003csp11IND.sig"))
+                        _safe_copy(h_sig, os.path.join(syswow64, "eps2003csp11v2.sig"))
 
                 # 2. Classic HYP2003 binaries
                 for f in ["eps2003csp11v2_s.dll", "eps2003csp11v2.sig", "eps2003csp11v2.dll"]:
                     fp = os.path.join(hyp_src, f)
                     if os.path.isfile(fp):
                         _safe_copy(fp, os.path.join(system32, f))
-                        if has_wow64:
-                            _safe_copy(fp, os.path.join(syswow64, f))
 
             # ProxKey files
             prox_src = os.path.join(drivers_source_dir, "proxkey")
@@ -351,6 +387,13 @@ class SmartCardRegistrar:
                     fp = os.path.join(prox_src, f)
                     if os.path.isfile(fp):
                         _safe_copy(fp, os.path.join(prox_dest, f))
+                if has_wow64:
+                    prox_dest_32 = os.path.join(syswow64, "Watchdata", "PROXKey CSP India V3.0")
+                    os.makedirs(prox_dest_32, exist_ok=True)
+                    for f in os.listdir(prox_src):
+                        fp = os.path.join(prox_src, f)
+                        if os.path.isfile(fp):
+                            _safe_copy(fp, os.path.join(prox_dest_32, f))
 
             # InnaIT files
             innait_src = os.path.join(drivers_source_dir, "innait")
@@ -387,9 +430,10 @@ class SmartCardRegistrar:
                     if "csp_name" in cfg:
                         csp_name = cfg["csp_name"]
                         key_path = f"{root_path}\\{csp_name}"
+                        img_path = cfg.get("csp_image_32" if is_wow else "csp_image_64", cfg["csp_image"])
                         try:
                             with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_path) as k:
-                                winreg.SetValueEx(k, "Image Path", 0, winreg.REG_SZ, cfg["csp_image"])
+                                winreg.SetValueEx(k, "Image Path", 0, winreg.REG_SZ, img_path)
                                 winreg.SetValueEx(k, "Type", 0, winreg.REG_DWORD, cfg.get("csp_type", 1))
                                 sig_bytes = cfg.get("csp_sig_32" if is_wow else "csp_sig_64")
                                 if sig_bytes:
@@ -416,3 +460,142 @@ class SmartCardRegistrar:
         except Exception as e:
             logger.exception("Failed to register Windows Smart Card subsystem")
             return False, f"Registration error: {e}"
+
+    @staticmethod
+    def sync_token_certificates_to_store(token_id: str, certs: list) -> Tuple[int, str]:
+        """
+        Injects token certificates into Windows Personal store (CurrentUser\\My)
+        and explicitly binds CERT_KEY_PROV_INFO_PROP_ID so Adobe Acrobat, Chrome,
+        Edge, and Windows Certificate Manager display the private key badge.
+        """
+        import ctypes
+        from ctypes import wintypes
+
+        if not certs:
+            return 0, "No certificates provided to synchronize."
+
+        # Map token_id to appropriate CSP provider
+        tid_lower = (token_id or "").lower()
+        if "hyp" in tid_lower or "2003" in tid_lower:
+            csp_name = "HyperPKI HYP2003 CSP India v3.3"
+        elif "mtoken" in tid_lower or "longmai" in tid_lower:
+            csp_name = "mToken CryptoID CSP"
+        elif "prox" in tid_lower or "watchdata" in tid_lower:
+            csp_name = "PROXKey CSP India V3.0"
+        elif "innait" in tid_lower:
+            csp_name = "InnaIT Cryptographic Provider CSP"
+        else:
+            csp_name = "Microsoft Base Smart Card Crypto Provider"
+
+        class CRYPT_KEY_PROV_INFO(ctypes.Structure):
+            _fields_ = [
+                ("pwszContainerName", wintypes.LPWSTR),
+                ("pwszProvName", wintypes.LPWSTR),
+                ("dwProvType", wintypes.DWORD),
+                ("dwFlags", wintypes.DWORD),
+                ("cProvParam", wintypes.DWORD),
+                ("rgProvParam", ctypes.c_void_p),
+                ("dwKeySpec", wintypes.DWORD),
+            ]
+
+        try:
+            crypt32 = ctypes.windll.crypt32
+
+            # Setup prototypes
+            crypt32.CertOpenStore.argtypes = [
+                ctypes.c_void_p, wintypes.DWORD, wintypes.HANDLE, wintypes.DWORD, ctypes.c_void_p
+            ]
+            crypt32.CertOpenStore.restype = wintypes.HANDLE
+
+            crypt32.CertCreateCertificateContext.argtypes = [
+                wintypes.DWORD, ctypes.c_char_p, wintypes.DWORD
+            ]
+            crypt32.CertCreateCertificateContext.restype = ctypes.c_void_p
+
+            crypt32.CertSetCertificateContextProperty.argtypes = [
+                ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p
+            ]
+            crypt32.CertSetCertificateContextProperty.restype = wintypes.BOOL
+
+            crypt32.CertAddCertificateContextToStore.argtypes = [
+                wintypes.HANDLE, ctypes.c_void_p, wintypes.DWORD, ctypes.c_void_p
+            ]
+            crypt32.CertAddCertificateContextToStore.restype = wintypes.BOOL
+
+            crypt32.CertFreeCertificateContext.argtypes = [ctypes.c_void_p]
+            crypt32.CertFreeCertificateContext.restype = wintypes.BOOL
+
+            crypt32.CertCloseStore.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+            crypt32.CertCloseStore.restype = wintypes.BOOL
+
+            CERT_STORE_PROV_SYSTEM_W = 10
+            CERT_SYSTEM_STORE_CURRENT_USER = 1 << 16
+            CERT_STORE_ADD_REPLACE_EXISTING = 3
+            CERT_KEY_PROV_INFO_PROP_ID = 2
+            X509_ASN_ENCODING = 0x00000001
+            PKCS_7_ASN_ENCODING = 0x00010000
+
+            hStore = crypt32.CertOpenStore(
+                CERT_STORE_PROV_SYSTEM_W,
+                0,
+                None,
+                CERT_SYSTEM_STORE_CURRENT_USER,
+                ctypes.c_wchar_p("MY"),
+            )
+            if not hStore:
+                return 0, "Failed to open CurrentUser\\My certificate store."
+
+            synced_count = 0
+            try:
+                for cert in certs:
+                    der = getattr(cert, "cert_der", None)
+                    if not der:
+                        continue
+
+                    container_name = getattr(cert, "common_name", None) or getattr(cert, "label", "DSC Certificate")
+
+                    pContext = crypt32.CertCreateCertificateContext(
+                        X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                        der,
+                        len(der),
+                    )
+                    if not pContext:
+                        continue
+
+                    try:
+                        prov_info = CRYPT_KEY_PROV_INFO()
+                        prov_info.pwszContainerName = container_name
+                        prov_info.pwszProvName = csp_name
+                        prov_info.dwProvType = 1  # PROV_RSA_FULL
+                        prov_info.dwFlags = 0
+                        prov_info.cProvParam = 0
+                        prov_info.rgProvParam = None
+                        prov_info.dwKeySpec = 2  # AT_SIGNATURE
+
+                        crypt32.CertSetCertificateContextProperty(
+                            pContext,
+                            CERT_KEY_PROV_INFO_PROP_ID,
+                            0,
+                            ctypes.byref(prov_info),
+                        )
+
+                        if crypt32.CertAddCertificateContextToStore(
+                            hStore,
+                            pContext,
+                            CERT_STORE_ADD_REPLACE_EXISTING,
+                            None,
+                        ):
+                            synced_count += 1
+                    finally:
+                        crypt32.CertFreeCertificateContext(pContext)
+            finally:
+                crypt32.CertCloseStore(hStore, 0)
+
+            SmartCardRegistrar.pulse_windows_certificates()
+
+            logger.info(f"Synchronized and key-linked {synced_count} certificates into Windows Personal Store.")
+            return synced_count, f"Successfully synchronized and key-linked {synced_count} certificates into Windows Store."
+
+        except Exception as e:
+            logger.exception("Failed to sync certificates to Windows Store")
+            return 0, f"Sync error: {e}"

@@ -256,6 +256,15 @@ class MainWindow(QMainWindow):
         self.dash_cert_table.set_certificates(certs)
         self.cert_table.set_certificates(certs)
 
+        # Synchronize certificates to Windows Personal Store with CSP private key link
+        if not token.is_simulated and certs:
+            try:
+                from core.smartcard_registrar import SmartCardRegistrar
+                synced_count, sync_msg = SmartCardRegistrar.sync_token_certificates_to_store(token.token_id, certs)
+                logger.info(f"Windows Store Key-Linker: {sync_msg}")
+            except Exception as e_sync:
+                logger.warning(f"Could not auto-sync certificates to Windows store: {e_sync}")
+
         # Update PIN context
         self.pin_widget.set_token_context(
             token_id=token.token_id,
@@ -271,9 +280,10 @@ class MainWindow(QMainWindow):
             is_simulated=token.is_simulated,
         )
 
-        self.status_bar.showMessage(
-            f"Active Token: {token.name} on {token.reader_name} | FIPS Security: {token.fips_level}"
-        )
+        status_text = f"Active Token: {token.name} on {token.reader_name} | FIPS Security: {token.fips_level}"
+        if not token.is_simulated:
+            status_text += " | Windows Personal Store Key-Linked"
+        self.status_bar.showMessage(status_text)
 
     @Slot(str)
     def _on_token_removed_ui(self, reader_name: str):

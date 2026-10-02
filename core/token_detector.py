@@ -270,8 +270,11 @@ class TokenDetector:
             # Check newly inserted
             for reader_name, token in detected_this_cycle.items():
                 if reader_name not in self._current_tokens:
+                    if self._simulated_token:
+                        logger.info("Physical hardware token detected; auto-disabling simulation mode.")
+                        self._simulated_token = None
                     self._current_tokens[reader_name] = token
-                    logger.info(f"Token Inserted: {token}")
+                    logger.info(f"Hardware Token Inserted: {token}")
                     for cb in self._callbacks_insert:
                         try:
                             cb(token)

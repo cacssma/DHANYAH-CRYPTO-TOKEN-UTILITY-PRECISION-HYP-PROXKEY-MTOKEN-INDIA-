@@ -42,7 +42,18 @@ class LoopbackRequestHandler(BaseHTTPRequestHandler):
         self._log_request()
         path = self.path.split("?")[0]
 
-        if path in ["/", "/status", "/health"]:
+        # emBridge Endpoints (Income Tax / MCA V3)
+        if path == "/DSC/Version":
+            self._handle_embridge_version()
+        elif path == "/DSC/ListToken":
+            self._handle_embridge_list_token()
+        elif path == "/DSC/ListCertificate":
+            self._handle_embridge_list_certificate()
+        # emSigner Endpoints (GST Portal / Traces)
+        elif path in ["/getCertificate", "/getCertificates"]:
+            self._handle_emsigner_certificates()
+        # Dhanyah Native Endpoints
+        elif path in ["/", "/status", "/health"]:
             self._handle_status()
         elif path in ["/certificates", "/certs"]:
             self._handle_certificates()
@@ -65,15 +76,39 @@ class LoopbackRequestHandler(BaseHTTPRequestHandler):
         try:
             payload = json.loads(body.decode("utf-8")) if body else {}
         except Exception:
-            self._send_json(400, {"error": "Invalid JSON body"})
-            return
+            payload = {}
 
-        if path in ["/verify/pin", "/pin/verify"]:
+        # emBridge Endpoints
+        if path == "/DSC/Version":
+            self._handle_embridge_version()
+        elif path == "/DSC/ListToken":
+            self._handle_embridge_list_token()
+        elif path == "/DSC/ListCertificate":
+            self._handle_embridge_list_certificate()
+        elif path == "/DSC/PKCSSign":
+            self._handle_embridge_pkcs_sign(payload)
+        elif path == "/DSC/Initialize":
+            self._send_json(200, {"status": 1, "message": "Success"})
+        # emSigner Endpoints
+        elif path in ["/getCertificate", "/getCertificates"]:
+            self._handle_emsigner_certificates()
+        elif path in ["/sign", "/signData", "/getSign"]:
+            self._handle_emsigner_sign(payload)
+        # Dhanyah Native Endpoints
+        elif path in ["/verify/pin", "/pin/verify"]:
             self._handle_verify_pin(payload)
         elif path in ["/sign/hash", "/hash/sign"]:
             self._handle_sign_hash(payload)
         elif path in ["/sign/pdf", "/pdf/sign"]:
             self._handle_sign_pdf(payload)
+        elif path == "/":
+            action = str(payload.get("action", "")).lower()
+            if "cert" in action:
+                self._handle_emsigner_certificates()
+            elif "sign" in action:
+                self._handle_emsigner_sign(payload)
+            else:
+                self._handle_status()
         else:
             self._send_json(404, {"error": "Endpoint not found", "path": path})
 
@@ -239,6 +274,199 @@ class LoopbackRequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send_json(500, {"success": False, "error": str(e)})
 
+    def _handle_embridge_version(self):
+        self._send_json(
+            200,
+            {
+                "status": 1,
+                "version": "2.0.1",
+                "message": "Success",
+                "service": "Dhanyah Crypto Utility emBridge Bridge",
+            },
+        )
+
+    def _handle_embridge_list_token(self):
+        app = self.server_app
+        token = app.get_primary_token()
+        if not token:
+            self._send_json(200, {"status": 0, "message": "No smart card or USB token detected.", "tokenList": []})
+            return
+
+        self._send_json(
+            200,
+            {
+                "status": 1,
+                "message": "Token list retrieved successfully",
+                "tokenList": [
+                    {
+                        "tokenId": 0,
+                        "tokenName": token.name,
+                        "tokenSerial": token.serial_number or "DH-2026-FIPS3",
+                        "status": "Connected",
+                    }
+                ],
+            },
+        )
+
+    def _handle_embridge_list_certificate(self):
+        app = self.server_app
+        certs = app.get_certificates()
+        if not certs:
+            self._send_json(200, {"status": 0, "message": "No certificate found on token.", "certificateList": []})
+            return
+
+        cert_list = []
+        for idx, cert in enumerate(certs):
+            valid_from_str = cert.valid_from.strftime("%d-%m-%Y %H:%M:%S") if hasattr(cert, "valid_from") else ""
+            valid_to_str = cert.valid_to.strftime("%d-%m-%Y %H:%M:%S") if hasattr(cert, "valid_to") else ""
+            cert_b64 = base64.b64encode(cert.cert_der).decode("ascii")
+            cert_list.append(
+                {
+                    "certId": idx,
+                    "alias": cert.common_name,
+                    "commonName": cert.common_name,
+                    "issuer": cert.issuer_cn,
+                    "serialNumber": cert.serial_number_hex,
+                    "validFrom": valid_from_str,
+                    "validTo": valid_to_str,
+                    "certificate": cert_b64,
+                    "publicKey": cert.fingerprint_sha256,
+                    "pan": cert.pan_number or "",
+                }
+            )
+
+        self._send_json(
+            200,
+            {
+                "status": 1,
+                "message": "Certificate list retrieved successfully",
+                "certificateList": cert_list,
+            },
+        )
+
+    def _handle_embridge_pkcs_sign(self, payload: Dict[str, Any]):
+        app = self.server_app
+        token = app.get_primary_token()
+        if not token:
+            self._send_json(200, {"status": 0, "message": "No token connected."})
+            return
+
+        raw_input = payload.get("data") or payload.get("hash") or payload.get("tbsData") or ""
+        pin = payload.get("pin") or payload.get("password") or ""
+        algo = payload.get("algo") or payload.get("algorithm") or "SHA256"
+
+        if not raw_input:
+            self._send_json(200, {"status": 0, "message": "No data or hash provided to sign."})
+            return
+
+        try:
+            input_bytes = base64.b64decode(raw_input)
+        except Exception:
+            input_bytes = raw_input.encode("utf-8")
+
+        certs = app.get_certificates()
+        cert = certs[0] if certs else None
+        ck_id = cert.ck_id if cert else b""
+
+        try:
+            if len(input_bytes) in [20, 32, 64]:
+                sig_bytes = app.signer.sign_hash_hardware(
+                    token_id=token.token_id,
+                    slot=payload.get("slot", 0),
+                    pin=pin,
+                    data_hash=input_bytes,
+                    ck_id=ck_id,
+                    algo=algo,
+                    is_simulated=token.is_simulated,
+                )
+            else:
+                sig_bytes = app.signer.sign_data(
+                    token_id=token.token_id,
+                    slot=payload.get("slot", 0),
+                    pin=pin,
+                    raw_data=input_bytes,
+                    algo=algo,
+                    ck_id=ck_id,
+                    is_simulated=token.is_simulated,
+                )
+
+            sig_b64 = base64.b64encode(sig_bytes).decode("ascii")
+            self._send_json(
+                200,
+                {
+                    "status": 1,
+                    "message": "Data signed successfully",
+                    "signature": sig_b64,
+                },
+            )
+        except Exception as e:
+            logger.error(f"emBridge PKCSSign error: {e}")
+            self._send_json(200, {"status": 0, "message": f"Signing error: {e}"})
+
+    def _handle_emsigner_certificates(self):
+        app = self.server_app
+        certs = app.get_certificates()
+        cert_items = []
+        for c in certs:
+            cert_items.append(
+                {
+                    "certificate": base64.b64encode(c.cert_der).decode("ascii"),
+                    "alias": c.common_name,
+                    "serialNumber": c.serial_number_hex,
+                    "issuer": c.issuer_cn,
+                    "validTo": c.valid_to.strftime("%d-%m-%Y %H:%M:%S") if hasattr(c, "valid_to") else "",
+                    "pan": c.pan_number or "",
+                }
+            )
+        self._send_json(200, {"status": "success", "certificates": cert_items})
+
+    def _handle_emsigner_sign(self, payload: Dict[str, Any]):
+        app = self.server_app
+        token = app.get_primary_token()
+        if not token:
+            self._send_json(400, {"status": "error", "error": "No crypto token inserted."})
+            return
+
+        raw_input = payload.get("data") or payload.get("hash") or payload.get("signData") or ""
+        pin = payload.get("pin") or payload.get("password") or ""
+        algo = payload.get("algo") or "SHA256"
+
+        try:
+            input_bytes = base64.b64decode(raw_input)
+        except Exception:
+            input_bytes = raw_input.encode("utf-8")
+
+        certs = app.get_certificates()
+        cert = certs[0] if certs else None
+        ck_id = cert.ck_id if cert else b""
+
+        try:
+            if len(input_bytes) in [20, 32, 64]:
+                sig_bytes = app.signer.sign_hash_hardware(
+                    token_id=token.token_id,
+                    slot=payload.get("slot", 0),
+                    pin=pin,
+                    data_hash=input_bytes,
+                    ck_id=ck_id,
+                    algo=algo,
+                    is_simulated=token.is_simulated,
+                )
+            else:
+                sig_bytes = app.signer.sign_data(
+                    token_id=token.token_id,
+                    slot=payload.get("slot", 0),
+                    pin=pin,
+                    raw_data=input_bytes,
+                    algo=algo,
+                    ck_id=ck_id,
+                    is_simulated=token.is_simulated,
+                )
+
+            sig_b64 = base64.b64encode(sig_bytes).decode("ascii")
+            self._send_json(200, {"status": "success", "signature": sig_b64})
+        except Exception as e:
+            self._send_json(500, {"status": "error", "error": str(e)})
+
     def _send_json(self, status: int, data: Dict[str, Any]):
         content = json.dumps(data, indent=2).encode("utf-8")
         self._set_cors_headers(status)
@@ -256,7 +484,7 @@ class LoopbackRequestHandler(BaseHTTPRequestHandler):
 
 
 class LoopbackServer:
-    """Threaded local loopback HTTP server."""
+    """Threaded local loopback HTTP gateway server supporting multi-port listeners."""
 
     def __init__(
         self,
@@ -275,8 +503,9 @@ class LoopbackServer:
         self.signer = signer
         self.host = host
         self.port = port
-        self._httpd: Optional[ThreadingHTTPServer] = None
-        self._server_thread: Optional[threading.Thread] = None
+        self._servers: List[ThreadingHTTPServer] = []
+        self._server_threads: List[threading.Thread] = []
+        self.active_ports: List[int] = []
         self.log_callback: Optional[Callable[[str], None]] = None
 
     def get_primary_token(self):
@@ -294,33 +523,58 @@ class LoopbackServer:
         return self.cert_manager.get_token_certificates(token.token_id)
 
     def start(self) -> bool:
-        """Start the loopback server in background thread."""
-        if self._httpd is not None:
+        """Start the loopback gateway across primary and government portal ports."""
+        if self._servers:
             return True
 
         LoopbackRequestHandler.server_app = self
-        try:
-            self._httpd = ThreadingHTTPServer((self.host, self.port), LoopbackRequestHandler)
-            self._server_thread = threading.Thread(
-                target=self._httpd.serve_forever, daemon=True, name="LoopbackServerThread"
-            )
-            self._server_thread.start()
-            logger.info(f"Loopback Server listening on http://{self.host}:{self.port}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to start loopback server on port {self.port}: {e}")
-            self._httpd = None
-            return False
+        ports_to_try = [self.port]
+        for p in [1585, 26769, 26443]:
+            if p not in ports_to_try:
+                ports_to_try.append(p)
+
+        bound_any = False
+        for port in ports_to_try:
+            try:
+                server = ThreadingHTTPServer((self.host, port), LoopbackRequestHandler)
+                thread = threading.Thread(
+                    target=server.serve_forever, daemon=True, name=f"GatewayThread_{port}"
+                )
+                thread.start()
+                self._servers.append(server)
+                self._server_threads.append(thread)
+                self.active_ports.append(port)
+                bound_any = True
+                logger.info(f"Gateway listening on http://{self.host}:{port}")
+            except OSError as e:
+                # Port already in use by external service (e.g. running emBridge/emSigner)
+                logger.info(
+                    f"Port {port} already bound by service or restricted: {e}. Falling back to active ports."
+                )
+            except Exception as e:
+                logger.warning(f"Error binding port {port}: {e}")
+
+        return bound_any
 
     def stop(self):
-        """Stop the loopback server."""
-        if self._httpd:
-            self._httpd.shutdown()
-            self._httpd.server_close()
-            self._httpd = None
-            if self._server_thread and self._server_thread.is_alive():
-                self._server_thread.join(timeout=1.0)
-            logger.info("Loopback Server stopped.")
+        """Stop all gateway server instances."""
+        for server in self._servers:
+            try:
+                server.shutdown()
+                server.server_close()
+            except Exception as e:
+                logger.debug(f"Error closing server: {e}")
+        self._servers.clear()
+
+        for thread in self._server_threads:
+            try:
+                if thread.is_alive():
+                    thread.join(timeout=1.0)
+            except Exception:
+                pass
+        self._server_threads.clear()
+        self.active_ports.clear()
+        logger.info("All Gateway servers stopped.")
 
     def is_running(self) -> bool:
-        return self._httpd is not None
+        return len(self._servers) > 0

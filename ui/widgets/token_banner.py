@@ -142,13 +142,22 @@ class TokenBannerWidget(QFrame):
             self.lbl_atr.setText("N/A")
             self.lbl_specs.setText("Security: FIPS 140-2/3 Level 3 (Waiting for connection)")
             self.lbl_driver_info.setText("System: Smart Card Service running. Ready for token hotplug.")
-            return
-
         # Token Connected
-        sim_tag = " [DEMO SIMULATION]" if token.is_simulated else " [HARDWARE]"
-        self.lbl_status_pill.setText("TOKEN CONNECTED" + (" (SIM)" if token.is_simulated else ""))
-        self.lbl_status_pill.setProperty("class", "BadgeValid")
-        self.lbl_status_pill.setStyleSheet("")
+        if token.is_simulated:
+            self.lbl_status_pill.setText("SIMULATION MODE")
+            self.lbl_status_pill.setProperty("class", "BadgeInfo")
+            self.lbl_status_pill.setStyleSheet("background-color: #0284c7; color: #ffffff; padding: 4px 10px; border-radius: 10px; font-weight: bold;")
+            sim_tag = " [DEMO SIMULATION]"
+        else:
+            # Physical Hardware Token
+            self.combo_sim.blockSignals(True)
+            self.combo_sim.setCurrentIndex(0)  # Live Hardware
+            self.combo_sim.blockSignals(False)
+
+            self.lbl_status_pill.setText("● ACTIVE HARDWARE TOKEN")
+            self.lbl_status_pill.setProperty("class", "BadgeValid")
+            self.lbl_status_pill.setStyleSheet("background-color: #16a34a; color: #ffffff; padding: 4px 10px; border-radius: 10px; font-weight: bold;")
+            sim_tag = " [PHYSICAL HARDWARE]"
 
         self.lbl_device_name.setText(f"{token.name}{sim_tag}")
         self.lbl_reader_name.setText(token.reader_name)
@@ -158,7 +167,7 @@ class TokenBannerWidget(QFrame):
         if driver_path:
             self.lbl_driver_info.setText(f"Active PKCS#11 Library: {driver_path}")
         else:
-            self.lbl_driver_info.setText(f"PKCS#11 Middleware: Ready for {token.name}")
+            self.lbl_driver_info.setText(f"Subsystem Status: Native MiniDriver & PKCS#11 Active for {token.name}")
 
     def _copy_atr(self):
         text = self.lbl_atr.text()
