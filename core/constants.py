@@ -9,6 +9,9 @@ Specialized for Indian FIPS 140-2/3 Level 3 Crypto USB Tokens:
 
 from typing import Dict, List, Any
 
+# Application Version
+APP_VERSION = "1.0.1"
+
 # Loopback HTTP / WebSocket default configuration
 DEFAULT_LOOPBACK_PORT = 18200
 DEFAULT_LOOPBACK_HOST = "127.0.0.1"

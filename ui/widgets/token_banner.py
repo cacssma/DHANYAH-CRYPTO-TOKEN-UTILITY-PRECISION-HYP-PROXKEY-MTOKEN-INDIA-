@@ -142,6 +142,8 @@ class TokenBannerWidget(QFrame):
             self.lbl_atr.setText("N/A")
             self.lbl_specs.setText("Security: FIPS 140-2/3 Level 3 (Waiting for connection)")
             self.lbl_driver_info.setText("System: Smart Card Service running. Ready for token hotplug.")
+            return
+
         # Token Connected
         if token.is_simulated:
             self.lbl_status_pill.setText("SIMULATION MODE")

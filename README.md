@@ -42,14 +42,13 @@ In India, Chartered Accountants, Tax Professionals, Company Secretaries, and Bus
 
 ---
 
-## 🚀 Quick Start (Pre-built Executable)
+## 🚀 Quick Start (Pre-built Windows Installer)
 
-### No Python or Vendor Software Required!
-1. Download the latest release from the [Releases](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY/releases) page or build using `build_exe.bat`.
-2. Extract the folder and double-click:
-   ```text
-   DhanyahCryptoUtility.exe
-   ```
+### Download & Install (v1.0.1)
+[![Download Dhanyah Crypto Utility v1.0.1](https://img.shields.io/badge/Download-Installer%20v1.0.1%20(.exe)-blue?style=for-the-badge&logo=windows)](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY/releases/download/v1.0.1/DhanyahCryptoUtility_Setup_v1.0.1.exe)
+
+1. Download **[DhanyahCryptoUtility_Setup_v1.0.1.exe](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY/releases/download/v1.0.1/DhanyahCryptoUtility_Setup_v1.0.1.exe)** from the [Releases](https://github.com/cacssma/DHANYAH-CRYPTO-UTILITY/releases) page or from the `releases/` directory in this repository.
+2. Run the setup installer (Administrator privileges required to register Windows Smart Card MiniDrivers & 32-bit SysWOW64 DLLs).
 3. Plug in any of the 4 supported USB tokens — the application will automatically detect the token, display its certificates, and allow safe PIN operations and signing.
 
 ---
